@@ -1,0 +1,48 @@
+/*** Modal ***/
+session-alert{
+	position: fixed;
+	width: auto;
+	height: auto;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	display: block;
+	z-index: 1001;
+	overflow: hidden;
+	overflow-y: auto;
+	background-color: rgba(0,0,0,0.5);
+}
+session-alert .modal-dialog {
+	left: 10px;
+	right: 10px;
+	bottom: 10px;
+	top: 10px;
+}
+session-alert .modal-dialog.countDown {
+	position: relative;
+}
+session-alert .overlay {
+	width: auto;
+	height: auto;
+	top: 0;
+	right: 17px;
+	bottom: 0;
+	left: 0;
+	opacity: 0;
+	display: none;
+}
+
+.styled-no {
+	padding-top: 0;
+	line-height: 34px;
+}
+
+@media (min-width: 768px) {
+	session-alert .modal-dialog {
+		left: 50%;
+		right: auto;
+		bottom: auto;
+		margin-left: -300px;
+	}
+}
