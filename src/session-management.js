@@ -15,7 +15,7 @@
 	'use strict';
 
 	jEli
-	.jModule('com.jeli.session.management',{})
+	.jModule('jeli.session.management',{})
 	.jProvider('session',sessionFn)
 	.jFactory('sessionManagement',['$document','$rootModel','$injector','session',sessionManagementFn])
 	.jElement('sessionAlert',['$jCompiler',sessionAlertFn]);
