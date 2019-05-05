@@ -6,7 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "types": "@ypes/index.d.ts",
+    "types": "types/index.d.ts",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/gojecks/jeli.session.management.git"
