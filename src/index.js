@@ -127,7 +127,8 @@
             this.trigger = function(name) {
                 if (name && eventsName.indexOf(name) > -1) {
                     if (lastTriggered !== name) {
-
+                        // remove the alert
+                        sessionManagement.alert.close();
                         _handler(name);
                         lastTriggered = name;
                     }
