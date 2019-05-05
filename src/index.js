@@ -193,6 +193,8 @@
                 countDown = _currentTimer = 0;
                 watchMan = {};
                 delete this.started;
+                // remove alert
+                sessionManagement.alert.close();
             }
         };
 
