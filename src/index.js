@@ -1,5 +1,3 @@
-(function() {
-
     //Created by Gojecks Joseph
     //application Session ManageMent v1.0 
     //sets a watch over your application
@@ -10,45 +8,16 @@
     //isIdle
     //isIdleEnd
     //isTimeOutWarn
-    //License GPL v2
-
-    'use strict';
-
-    jEli
-        .jModule('jeli.session.management', {})
-        .jProvider('session', sessionFn)
-        .jFactory('sessionManagement', ['$document', '$rootModel', '$injector', 'session', sessionManagementFn])
-        .jElement('sessionAlert', ['$jCompiler', sessionAlertFn]);
-
     //sessionFn Provider
-    function sessionFn() {
-
-        var sessionObj = {};
-        this.setIdleTime = function(duration) {
-            sessionObj['idleTime'] = duration || 30;
-
-            return this;
-        };
-
-        this.setTimeOutWarn = function(duration) {
-            sessionObj['timeOutWarn'] = duration;
-            return this;
-        };
-
-        this.setAutoReconnect = function() {
-            sessionObj.autoReconnect = true;
-            return this;
-        };
-
-        this.$get = function() {
-            return function(name) {
-                return sessionObj[name];
-            };
-        };
+    function sessionProviderFn() {
+        this.idleTime = 30;
+        this.timeOutWarn = 15;
+        this.autoReconnect = true;
+        this.events = ['mousedown', 'keydown', 'touchstart', 'mousemove']
     }
 
     //AppplicationWatchManFn 
-    function sessionManagementFn($document, $rootModel, $injector, session) {
+    function sessionManagementFn(session) {
         //Watch Obj requires OAUTH 2.0 JSON format
         //set timeout time using 
         // var expiredAt = new Date();
@@ -57,7 +26,6 @@
         //@require Object
         //expires_at : Date() in Milliseconds (see example above)
         //expires_in : Number
-
         var watchObj = {},
             watchManService = null,
             keepAlive = 1,
@@ -66,9 +34,7 @@
             _currentTimer = 0,
             handler = {},
             lastTriggered = null,
-            idleTime = session('idleTime'),
-            timeOutWarn = session('timeOutWarn'),
-            autoReconnect = session('autoReconnect'),
+            autoReconnect = session.autoReconnect,
             eventsName = ['isIdle', 'isAlive', 'isIdleEnd', 'isTimedOut', 'isTimeOutWarn'],
             $self = this,
             timeOutWarnInitialized = false;
@@ -84,7 +50,7 @@
 
             //when to set user idle
             //current time is set to 60 seconds
-            if (countDown >= idleTime) {
+            if (countDown >= session.idleTime) {
                 keepAlive = false;
                 watchMan.trigger('isIdle');
             }
@@ -92,8 +58,8 @@
             if (keepAlive) {
                 watchMan.trigger('isAlive');
 
-                if (timeOutWarn) {
-                    var tWarning = ((watchObj.expires_at - +new Date) <= (timeOutWarn * 1000));
+                if (session.timeOutWarn) {
+                    var tWarning = ((watchObj.expires_at - +new Date) <= (session.timeOutWarn * 1000));
                     if (tWarning && !timeOutWarnInitialized) {
                         watchMan.trigger('isTimeOutWarn');
                         timeOutWarnInitialized = true;
@@ -130,10 +96,13 @@
             //Handler to trigger user Events
             //broadcast on different event name
             var _handler = function(eventName) {
-                var $broadcastName = '$watchManService.' + eventName;
                 trigger(eventName);
             };
 
+            /**
+             * 
+             * @param {*} name 
+             */
             function trigger(name) {
                 if (name && handler[name]) {
                     var _event = event();
@@ -145,7 +114,6 @@
 
             //set event listerners
             //using different event method name
-
             this.on = function(name, fn) {
                 //set a listener
                 if (name && fn) {
@@ -156,7 +124,6 @@
             };
 
             //Trigger an event
-
             this.trigger = function(name) {
                 if (name && eventsName.indexOf(name) > -1) {
                     if (lastTriggered !== name) {
@@ -167,64 +134,39 @@
                 }
             };
 
+            this.destroy = function() {
+                session.events.forEach(remEvent);
+
+                function remEvent(ev) {
+                    document.removeEventListener(ev, _listener);
+                }
+            };
+
             //set domEvent Listener
             var _this = this;
-            $document
-                .on('mousedown.watchman keydown.watchman touchstart.watchman', function(e) {
-                    countDown = 0;
-                    if (lastTriggered === 'isIdle') {
-                        _this.trigger('isIdleEnd');
-                    }
-                    //keep alive
-                    keepAlive = true;
-                    _this.trigger('isAlive');
-                });
+
+            function _listener(e) {
+                countDown = 0;
+                if (lastTriggered === 'isIdle') {
+                    _this.trigger('isIdleEnd');
+                }
+                //keep alive
+                keepAlive = true;
+                _this.trigger('isAlive');
+            }
+
+            /**
+             * register listeners
+             */
+            session.events.forEach(function(ev) {
+                document.addEventListener(ev, _listener, false);
+            });
         }
 
-        //session Alert
-        function sessionAlert() {
-
-            var isOpen = false,
-                body = jEli.dom('body'),
-                model = $rootModel.$new(),
-                $compiler = $injector.get('$jCompiler');
-            //set a new prototype object
-            this.open = function(obj) {
-
-                var options = {
-                    html: "Set Alert Message here",
-                    include: null,
-                    title: "Alert Status",
-                    isActive: true
-                };
-
-                model.modal = jEli.$extend(options, obj);
-                model.trigger = function(name) {
-                    if (obj[name] && jEli.$isFunction(obj[name])) {
-                        obj[name]();
-                    }
-                };
-
-                if (!isOpen) {
-                    body.append($compiler('<session-alert></session-alert>')(model));
-                }
-
-                model.$consume();
-                isOpen = true;
-            };
-
-            this.close = function(fn) {
-                isOpen = !isOpen;
-                jEli.dom('session-alert').remove();
-                if (fn && jEli.$isFunction(fn)) {
-                    fn(model);
-                }
-            };
-        }
 
         //set the Object to watch over
         this.setWatchObject = function(obj) {
-            if (obj && jEli.$isObject(obj)) {
+            if (obj && jeli.$isObject(obj)) {
                 watchObj = obj;
             }
 
@@ -232,13 +174,13 @@
         };
 
         this.startWatch = function(timer) {
-            if (watchObj.expires_at && (watchObj.expires_at > +new Date)) {
-                watchManService = setInterval(watchManIntervalService, timer || 1000);
-                watchMan = new WatchManActivity();
-                //set started variable
-                this.started = true;
-            }
+            // if (watchObj.expires_at && (watchObj.expires_at > +new Date)) {
+            watchManService = setInterval(watchManIntervalService, timer || 1000);
+            //set started variable
+            this.started = true;
+            // }
 
+            watchMan = new WatchManActivity();
             return watchMan;
         };
 
@@ -247,7 +189,7 @@
                 //clear our interval
                 //unbind events bound to document
                 clearInterval(watchManService);
-                $document.unbind('.watchman');
+                watchMan.destroy();
                 countDown = _currentTimer = 0;
                 watchMan = {};
                 delete this.started;
@@ -261,25 +203,12 @@
             timeOutWarnInitialized = false;
         };
 
-        this.alert = new sessionAlert();
-
         return this;
     }
 
-
-    function sessionAlertFn($compile) {
-
-        return ({
-            template: function() {
-                var html = '<div class="overlay"></div><div>';
-                html += '<div class="modal-dialog countDown"><div class="modal-content"><div class="modal-header" j-if="modal.title">';
-                html += '{{modal.title | translate}}</div><div class="modal-body">';
-                html += '<div j-if="modal.html && !modal.include" j-bind-html="modal.html">{{modal.html}}</div>';
-                html += '<div j-if="modal.include"><div j-include="modal.include"></div></div></div></div></div></div>';
-
-                return html;
-            }
-        });
+    var provider = (new sessionProviderFn);
+    var sessionManagement = {
+        provider: provider,
+        manager: new sessionManagementFn(provider),
+        alert: (new sessionAlertServiceFn)
     }
-
-})();
