@@ -13,7 +13,7 @@
         this.idleTime = 30;
         this.timeOutWarn = 15;
         this.autoReconnect = true;
-        this.events = ['mousedown', 'keydown', 'touchstart', 'mousemove']
+        this.events = ['mousedown', 'keydown', 'touchstart']
     }
 
     //AppplicationWatchManFn 

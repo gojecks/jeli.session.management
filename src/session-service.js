@@ -32,6 +32,8 @@
             var height = modal.clientHeight;
             var windowHeight = this.ele.clientHeight;
             modal.style.top = ((windowHeight - height) / 2) + "px";
+
+            this.opetions = options;
         };
 
         this.close = function(fn) {
@@ -40,6 +42,13 @@
                 fn();
             }
             // remove the element
-            this.ele.parentNode.removeChild(this.ele);
+            this.ele && this.ele.parentNode.removeChild(this.ele);
+            this.ele = null;
         };
+
+        this.click = function(eventName) {
+            if (this.options[eventName]) {
+                this.options[eventName]();
+            }
+        }
     }
