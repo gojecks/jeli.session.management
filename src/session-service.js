@@ -33,17 +33,20 @@
             var windowHeight = this.ele.clientHeight;
             modal.style.top = ((windowHeight - height) / 2) + "px";
 
-            this.opetions = options;
+            this.options = options;
         };
 
         this.close = function(fn) {
-            isOpen = !isOpen;
-            if (fn && jeli.$isFunction(fn)) {
-                fn();
+            if (isOpen) {
+                isOpen = !isOpen;
+                if (fn && jeli.$isFunction(fn)) {
+                    fn();
+                }
+                // remove the element
+                this.ele.parentNode.removeChild(this.ele);
+                this.ele = null;
+                this.options = null;
             }
-            // remove the element
-            this.ele && this.ele.parentNode.removeChild(this.ele);
-            this.ele = null;
         };
 
         this.click = function(eventName) {

@@ -175,17 +175,22 @@
         };
 
         this.startWatch = function(timer) {
-            // if (watchObj.expires_at && (watchObj.expires_at > +new Date)) {
-            watchManService = setInterval(watchManIntervalService, timer || 1000);
-            //set started variable
-            this.started = true;
-            // }
+            if (!this.started) {
+                // if (watchObj.expires_at && (watchObj.expires_at > +new Date)) {
 
-            watchMan = new WatchManActivity();
-            return watchMan;
+                watchManService = setInterval(watchManIntervalService, timer || 1000);
+                //set started variable
+                this.started = true;
+                // }
+
+                watchMan = new WatchManActivity();
+                return watchMan;
+            }
+
+            throw Error("Watch Service already started");
         };
 
-        this.$destroy = function() {
+        this.$destroy = function(removeAlert) {
             if (this.started) {
                 //clear our interval
                 //unbind events bound to document
@@ -194,8 +199,9 @@
                 countDown = _currentTimer = 0;
                 watchMan = {};
                 delete this.started;
-                // remove alert
-                sessionManagement.alert.close();
+                if (removeAlert) {
+                    sessionManagement.alert.close();
+                }
             }
         };
 
